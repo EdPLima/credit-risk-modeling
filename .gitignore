@@ -4,3 +4,10 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 artifacts/
+# Dados
+data/raw/*.csv
+data/interim/*.parquet
+data/processed/*.parquet
+
+# Exceto descrição das colunas
+!data/raw/columns_description.csv
