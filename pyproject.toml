@@ -1,0 +1,8 @@
+[project]
+name = "credit-risk"
+version = "0.1.0"
+description = "Experimentos reproduziveis de risco de credito com MLflow"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

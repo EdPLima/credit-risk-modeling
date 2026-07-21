@@ -1,0 +1,46 @@
+services:
+
+  postgres:
+
+    image: postgres:17
+
+    container_name: mlflow-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: mlflow
+      POSTGRES_USER: mlflow
+      POSTGRES_PASSWORD: mlflow
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    ports:
+      - "5432:5432"
+
+
+  mlflow:
+
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mlflow
+
+    container_name: mlflow
+
+    restart: unless-stopped
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "5000:5000"
+
+    volumes:
+      - artifacts_data:/mlflow/artifacts
+
+volumes:
+
+  postgres_data:
+
+  artifacts_data:
