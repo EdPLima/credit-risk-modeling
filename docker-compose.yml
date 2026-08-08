@@ -13,11 +13,17 @@ services:
       POSTGRES_USER: mlflow
       POSTGRES_PASSWORD: mlflow
 
+    ports:
+      - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mlflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 
   mlflow:
@@ -31,13 +37,23 @@ services:
     restart: unless-stopped
 
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
     ports:
       - "5000:5000"
 
     volumes:
       - artifacts_data:/mlflow/artifacts
+
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri postgresql://mlflow:mlflow@postgres:5432/mlflow
+      --artifacts-destination /mlflow/artifacts
+      --serve-artifacts
+
 
 volumes:
 
