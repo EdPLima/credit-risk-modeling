@@ -1,0 +1,14 @@
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "credit-risk"
+  registered_model_name: "credit-risk-model"
+  alias: "production"
+
+  artifacts:
+    model_name: "lgb_prob_default_production"
+    model_path: "/mlflow/artifacts/4/e81e26974f17439993329cfbfae1c5ef/artifacts"
+
+  tags:
+    project: "credit-risk"
+    team: "data-science"
+    problem_type: "binary-classification"

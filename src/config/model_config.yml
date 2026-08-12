@@ -1,0 +1,14 @@
+model:
+  type: lightgbm
+
+  hyperparameters:
+    learning_rate: 0.015571426505875839
+    n_estimators: 1500
+    num_leaves: 24
+    min_child_samples: 128
+    subsample: 0.9090295739977976
+    colsample_bytree: 0.8999415804553264
+    reg_alpha: 4.6297741088726654e-07
+    reg_lambda: 3.249115484535142e-06
+    min_split_gain: 0.7978851525211049
+    scale_pos_weight: 6.249791712518849

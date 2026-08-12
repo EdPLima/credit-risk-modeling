@@ -1,0 +1,12 @@
+data:
+  train:
+    x_path: "data/interim/X_train.parquet"
+    y_path: "data/interim/y_train.parquet"
+
+  validation:
+    x_path: "data/interim/X_val.parquet"
+    y_path: "data/interim/y_val.parquet"
+
+  test:
+    x_path: "data/interim/X_test.parquet"
+    y_path: "data/interim/y_test.parquet"
