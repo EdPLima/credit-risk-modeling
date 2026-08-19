@@ -1,12 +1,14 @@
 mlflow:
   tracking_uri: "http://localhost:5000"
-  experiment_name: "credit-risk"
+  experiment_name: "final-model-v2"
   registered_model_name: "credit-risk-model"
-  alias: "production"
+  alias: "champion"
 
   artifacts:
-    model_name: "lgb_prob_default_production"
-    model_path: "/mlflow/artifacts/4/e81e26974f17439993329cfbfae1c5ef/artifacts"
+    selected_features: "model_contract/selected_features.json"
+    signature: "model_contract/signature.json"
+    input_example: "examples/input_example.csv"
+    output_example: "examples/output_example.csv"
 
   tags:
     project: "credit-risk"
