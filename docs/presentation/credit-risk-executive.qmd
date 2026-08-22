@@ -1,0 +1,272 @@
+---
+title: "Modelo de Risco de Crédito"
+subtitle: "Da análise exploratória à priorização financeira em lote"
+author: "Credit Risk Analytics"
+date: "Agosto de 2026"
+lang: pt-BR
+format:
+  revealjs:
+    theme: [default, executive.scss]
+    slide-number: c/t
+    progress: true
+    controls: true
+    transition: fade
+    background-transition: fade
+    center: false
+    incremental: false
+    embed-resources: true
+    footer: "Modelo de Risco de Crédito | Visão executiva"
+execute:
+  echo: false
+---
+
+## O objetivo é priorizar risco sem substituir a política de crédito
+
+::: {.columns}
+::: {.column width="48%"}
+### Decisão de negócio
+
+Usar o score para priorizar propostas com maior probabilidade de inadimplência para revisão, tratamento de risco ou acompanhamento de carteira.
+
+O modelo não aprova nem recusa crédito sozinho. Ele adiciona um sinal quantitativo, rastreável e mensurável ao processo.
+:::
+::: {.column width="52%"}
+<div class="decision-flow">
+  <div><span>1</span><strong>Aplicações</strong><small>Perfil financeiro, histórico e comportamento</small></div>
+  <div><span>2</span><strong>Score</strong><small>Probabilidade estimada de inadimplência</small></div>
+  <div><span>3</span><strong>Ação</strong><small>Priorizar análise e aplicar política</small></div>
+</div>
+:::
+:::
+
+::: {.callout}
+<strong>Ponto de partida:</strong> o desafio não é maximizar acurácia; é concentrar inadimplência nas propostas que receberão atenção adicional.
+:::
+
+## A EDA confirmou que a inadimplência é rara e exige métricas adequadas
+
+<svg class="chart wide-chart" viewBox="0 0 960 390" role="img" aria-label="Gráfico de colunas da distribuição de inadimplência">
+  <text x="42" y="37" class="chart-title">Distribuição do desfecho em 307.511 aplicações</text>
+  <line x1="150" y1="325" x2="890" y2="325" class="chart-line"/>
+  <line x1="150" y1="75" x2="150" y2="325" class="chart-line"/>
+  <line x1="150" y1="93" x2="890" y2="93" class="chart-grid"/><text x="102" y="98" class="chart-label">100%</text>
+  <line x1="150" y1="209" x2="890" y2="209" class="chart-grid"/><text x="110" y="214" class="chart-label">50%</text>
+  <rect x="300" y="112" width="190" height="213" class="bar-primary"/><text x="337" y="100" class="chart-value-big">91,93%</text><text x="325" y="355" class="chart-label-big">Sem inadimplência</text>
+  <rect x="610" y="306" width="190" height="19" class="bar-highlight"/><text x="662" y="294" class="chart-value-big">8,07%</text><text x="637" y="355" class="chart-label-big">Inadimplência</text>
+  <text x="42" y="382" class="chart-note">Acurácia isolada seria enganosa: prever sempre “sem inadimplência” já atingiria 91,93%. Por isso, PR-AUC, recall e KS guiaram a avaliação.</text>
+</svg>
+
+## Os testes de hipótese encontraram associações — não regras causais
+
+<svg class="chart wide-chart" viewBox="0 0 960 415" role="img" aria-label="Gráfico de colunas de inadimplência por tipo de contrato e gênero">
+  <text x="42" y="37" class="chart-title">Taxa de inadimplência em grupos explorados</text>
+  <line x1="115" y1="338" x2="900" y2="338" class="chart-line"/><line x1="115" y1="75" x2="115" y2="338" class="chart-line"/>
+  <line x1="115" y1="162" x2="900" y2="162" class="chart-grid"/><text x="72" y="167" class="chart-label">10%</text>
+  <line x1="115" y1="250" x2="900" y2="250" class="chart-grid"/><text x="78" y="255" class="chart-label">5%</text>
+  <rect x="225" y="191" width="92" height="147" class="bar-primary"/><text x="243" y="179" class="chart-value">8,35%</text><text x="231" y="365" class="chart-label-big">Cash</text>
+  <rect x="357" y="242" width="92" height="96" class="bar-secondary"/><text x="375" y="230" class="chart-value">5,48%</text><text x="348" y="365" class="chart-label-big">Revolving</text>
+  <rect x="582" y="215" width="92" height="123" class="bar-secondary"/><text x="600" y="203" class="chart-value">7,00%</text><text x="608" y="365" class="chart-label-big">Feminino</text>
+  <rect x="714" y="159" width="92" height="179" class="bar-primary"/><text x="731" y="147" class="chart-value">10,14%</text><text x="735" y="365" class="chart-label-big">Masculino</text>
+  <text x="214" y="400" class="chart-note">Tipo de contrato</text><text x="620" y="400" class="chart-note">Gênero</text>
+</svg>
+
+::: {.columns}
+::: {.column width="50%"}
+### Evidência estatística
+
+Para tipo de contrato, o qui-quadrado foi **293,15** com *p* &lt; 0,001; o V de Cramér foi **0,0309**. Para gênero, qui-quadrado **920,01**, *p* &lt; 0,001 e V de Cramér **0,0547**.
+:::
+::: {.column width="50%"}
+### Interpretação responsável
+
+O grande volume torna *p*-values muito sensíveis. Os dois V de Cramér indicam associação **muito fraca**. Gênero é sinal de monitoramento e revisão de fairness, nunca uma regra isolada de decisão.
+:::
+:::
+
+## Ausências também foram investigadas como possível sinal
+
+<svg class="chart wide-chart" viewBox="0 0 960 365" role="img" aria-label="Gráfico de colunas de ausência em variáveis">
+  <text x="42" y="37" class="chart-title">Variáveis com ausência material na EDA</text>
+  <line x1="175" y1="300" x2="860" y2="300" class="chart-line"/><line x1="175" y1="75" x2="175" y2="300" class="chart-line"/>
+  <line x1="175" y1="150" x2="860" y2="150" class="chart-grid"/><text x="128" y="155" class="chart-label">50%</text>
+  <rect x="340" y="124" width="155" height="176" class="bar-secondary"/><text x="375" y="112" class="chart-value-big">58,52%</text><text x="315" y="330" class="chart-label-big">BASEMENTAREA_MEDI</text>
+  <rect x="600" y="131" width="155" height="169" class="bar-primary"/><text x="635" y="119" class="chart-value-big">56,38%</text><text x="620" y="330" class="chart-label-big">EXT_SOURCE_1</text>
+  <text x="42" y="360" class="chart-note">As flags de ausência foram testadas com IV, WoE, qui-quadrado e V de Cramér. O processamento usa imputação; ausência não é descartada silenciosamente.</text>
+</svg>
+
+## A avaliação protegeu o teste final contra vazamento de informação
+
+<div class="split-flow">
+  <div class="split train"><strong>Treino</strong><span>Ajusta transformação e modelos</span><em>8,0729% de eventos</em></div>
+  <div class="split validation"><strong>Validação</strong><span>Escolhe parâmetros e threshold</span><em>8,0728% de eventos</em></div>
+  <div class="split test"><strong>Teste</strong><span>Confirma o resultado final uma vez</span><em>8,0728% de eventos</em></div>
+</div>
+
+::: {.columns}
+::: {.column width="50%"}
+### Métodos aplicados
+
+IV/WoE, KS univariado, qui-quadrado, V de Cramér, poda de correlação, remoção de constantes e validação cruzada estratificada.
+:::
+::: {.column width="50%"}
+### Por que isso importa
+
+O conjunto de teste não escolheu hiperparâmetros nem threshold. Ele foi usado para confirmar o comportamento do modelo selecionado.
+:::
+:::
+
+## A seleção reduziu complexidade sem deteriorar o PR-AUC
+
+::: {.columns}
+::: {.column width="66%"}
+![Evolução do PR-AUC durante a remoção iterativa de variáveis](assets/feature-selection-pr-auc.png){fig-alt="Linha de PR-AUC por número de variáveis durante a seleção recursiva com validação cruzada" width="100%"}
+:::
+::: {.column width="34%"}
+### Decisão de engenharia
+
+O processo removeu iterativamente as variáveis menos importantes e avaliou PR-AUC em validação cruzada a cada etapa.
+
+O melhor ponto absoluto ocorreu com **105 variáveis** (PR-AUC **0,26434**). Foram escolhidas **67 variáveis**, com PR-AUC **0,26414** e desvio-padrão **0,00198**.
+
+Isso reduz o contrato de entrada em **54,1%** sem perda material de poder preditivo.
+:::
+:::
+
+## A Regressão Logística foi o baseline interpretável
+
+<svg class="chart wide-chart" viewBox="0 0 960 390" role="img" aria-label="Gráfico de colunas comparando Regressão Logística e LightGBM no teste">
+  <text x="42" y="37" class="chart-title">PR-AUC no teste: baseline interpretável versus campeão</text>
+  <line x1="150" y1="315" x2="880" y2="315" class="chart-line"/><line x1="150" y1="80" x2="150" y2="315" class="chart-line"/>
+  <line x1="150" y1="151" x2="880" y2="151" class="chart-grid"/><text x="92" y="156" class="chart-label">0,30</text>
+  <line x1="150" y1="233" x2="880" y2="233" class="chart-grid"/><text x="92" y="238" class="chart-label">0,15</text>
+  <rect x="315" y="182" width="170" height="133" class="bar-secondary"/><text x="353" y="170" class="chart-value-big">0,2415</text><text x="293" y="345" class="chart-label-big">Regressão Logística</text>
+  <rect x="605" y="161" width="170" height="154" class="bar-highlight"/><text x="643" y="149" class="chart-value-big">0,2789</text><text x="648" y="345" class="chart-label-big">LightGBM</text>
+  <text x="42" y="380" class="chart-note">A Regressão Logística oferece coeficientes e odds ratios diretamente interpretáveis. O LightGBM melhora a ordenação de risco e é explicado operacionalmente com SHAP.</text>
+</svg>
+
+## O LightGBM venceu a comparação técnica em validação cruzada
+
+<svg class="chart wide-chart" viewBox="0 0 960 390" role="img" aria-label="Gráfico de colunas de PR-AUC para LightGBM, XGBoost e Random Forest">
+  <text x="42" y="37" class="chart-title">PR-AUC médio em cinco folds</text>
+  <line x1="160" y1="315" x2="880" y2="315" class="chart-line"/><line x1="160" y1="80" x2="160" y2="315" class="chart-line"/>
+  <line x1="160" y1="153" x2="880" y2="153" class="chart-grid"/><text x="103" y="158" class="chart-label">0,27</text>
+  <line x1="160" y1="232" x2="880" y2="232" class="chart-grid"/><text x="103" y="237" class="chart-label">0,24</text>
+  <rect x="290" y="167" width="125" height="148" class="bar-highlight"/><text x="300" y="155" class="chart-value">0,2641 ± 0,0029</text><text x="308" y="345" class="chart-label-big">LightGBM</text>
+  <rect x="495" y="199" width="125" height="116" class="bar-primary"/><text x="505" y="187" class="chart-value">0,2560 ± 0,0010</text><text x="518" y="345" class="chart-label-big">XGBoost</text>
+  <rect x="700" y="252" width="125" height="63" class="bar-secondary"/><text x="710" y="240" class="chart-value">0,2349 ± 0,0015</text><text x="690" y="345" class="chart-label-big">Random Forest</text>
+  <text x="42" y="380" class="chart-note">O LightGBM combinou a maior média de PR-AUC com baixa variação entre os folds. Por isso, avançou como candidato campeão.</text>
+</svg>
+
+## A calibração mostrou a limitação do baseline balanceado
+
+::: {.columns}
+::: {.column width="64%"}
+![Curva de calibração e distribuição das probabilidades da Regressão Logística](assets/logistic-calibration-oof.png){fig-alt="Curva de calibração e histograma de probabilidades da Regressão Logística usando previsões out-of-fold" width="100%"}
+:::
+::: {.column width="36%"}
+### Resultado da análise
+
+A curva fica abaixo da diagonal: a Regressão Logística com `class_weight="balanced"` superestima as probabilidades de inadimplência.
+
+**Brier Score OOF: 0,20115**
+
+Ela foi mantida como baseline de interpretação. Para ser usada como modelo probabilístico final, precisaria de uma etapa explícita de calibração.
+:::
+:::
+
+## O campeão confirmou desempenho no teste final
+
+::: {.columns}
+::: {.column width="48%"}
+<div class="score-hero"><strong>0,2789</strong><span>PR-AUC no teste final</span></div>
+<div class="score-grid">
+  <div><strong>0,7807</strong><span>ROC-AUC</span></div>
+  <div><strong>0,4193</strong><span>KS</span></div>
+  <div><strong>0,3313</strong><span>F1-score</span></div>
+  <div><strong>0,6500</strong><span>threshold</span></div>
+</div>
+:::
+::: {.column width="52%"}
+### Leitura operacional
+
+No threshold definido na validação, os alertas atingiram precisão de **25,69%** e recall de **46,61%** no teste.
+
+Em outras palavras, a taxa observada de inadimplência entre alertas foi aproximadamente **3,2 vezes** a taxa base da carteira (25,69% versus 8,07%).
+:::
+:::
+
+## O modelo capturou R$ 1,17 bilhão de exposição inadimplente no teste
+
+<svg class="chart wide-chart" viewBox="0 0 960 410" role="img" aria-label="Gráfico de colunas do impacto financeiro do modelo no teste">
+  <text x="42" y="37" class="chart-title">Exposição de crédito no conjunto de teste, com threshold definido na validação</text>
+  <line x1="140" y1="326" x2="895" y2="326" class="chart-line"/><line x1="140" y1="70" x2="140" y2="326" class="chart-line"/>
+  <line x1="140" y1="160" x2="895" y2="160" class="chart-grid"/><text x="60" y="165" class="chart-label">R$ 2 bi</text>
+  <rect x="260" y="177" width="145" height="149" class="bar-highlight"/><text x="253" y="164" class="chart-value">R$ 1,17 bi</text><text x="244" y="354" class="chart-label-big">Inadimplência</text><text x="273" y="376" class="chart-label-big">detectada</text>
+  <rect x="495" y="98" width="145" height="228" class="bar-secondary"/><text x="486" y="85" class="chart-value">R$ 3,36 bi</text><text x="512" y="354" class="chart-label-big">Falsos</text><text x="503" y="376" class="chart-label-big">alertas*</text>
+  <rect x="730" y="113" width="145" height="213" class="bar-primary"/><text x="721" y="100" class="chart-value">R$ 1,61 bi</text><text x="714" y="354" class="chart-label-big">Inadimplência</text><text x="741" y="376" class="chart-label-big">não detectada</text>
+  <text x="42" y="404" class="chart-note">Carteira analisada: R$ 36,77 bi. Exposição inadimplente total: R$ 2,78 bi. Valor capturado: 41,99%. *Falsos alertas representam exposição analisada, não perda realizada.</text>
+</svg>
+
+## A inferência será em lote, rastreável e controlada
+
+<div class="tool-row" aria-label="Ferramentas de inferência"><img src="assets/docker.svg"/><img src="assets/airflow.svg"/><img src="assets/mlflow.svg"/><img src="assets/postgresql.svg"/><span>Docker</span><span>Airflow</span><span>MLflow</span><span>PostgreSQL</span></div>
+
+<div class="process-line">
+  <div><span>1</span><strong>Carregar lote</strong><small>CSV ou Parquet com validações</small></div>
+  <div><span>2</span><strong>Resolver campeão</strong><small>MLflow resolve o alias <code>@champion</code></small></div>
+  <div><span>3</span><strong>Predizer</strong><small>Probabilidade e decisão pelo threshold</small></div>
+  <div><span>4</span><strong>Salvar</strong><small>Saída atômica e base para monitoramento</small></div>
+</div>
+
+## O retreino preserva o campeão até existir evidência de melhora
+
+<div class="tool-row" aria-label="Ferramentas de retreino"><img src="assets/docker.svg"/><img src="assets/airflow.svg"/><img src="assets/mlflow.svg"/><img src="assets/postgresql.svg"/><span>Docker</span><span>Airflow</span><span>MLflow</span><span>PostgreSQL</span></div>
+
+<div class="retrain-flow">
+  <div>Dados rotulados<br/><small>novos desfechos</small></div>
+  <div>Treinar challenger<br/><small>treino e validação</small></div>
+  <div>Comparar no teste<br/><small>PR-AUC e guardrails</small></div>
+  <div class="decision">Melhorou?<br/><small>gate de promoção</small></div>
+  <div>Atualizar alias<br/><small>promove ou mantém campeão</small></div>
+</div>
+
+::: {.callout}
+O próximo amadurecimento é usar holdout temporal e gates adicionais: calibração, KS, recall mínimo, captura financeira, qualidade de dados e fairness review.
+:::
+
+## Recomendação: operar o LightGBM como sinal governado de priorização
+
+::: {.columns}
+::: {.column width="55%"}
+### Evidência apresentada
+
+- EDA e testes de hipótese usados como análise de sinal e monitoramento
+- Contrato enxuto de **67 variáveis**, 54,1% menor
+- PR-AUC de **0,2789** no teste final
+- **R$ 1,17 bilhão** de exposição inadimplente detectada no teste
+- Inferência e retreino desenhados para rastreabilidade e promoção controlada
+:::
+::: {.column width="45%"}
+### Decisões de negócio pendentes
+
+1. Definir ação para cada faixa de score
+2. Definir capacidade de revisão e custo de falsos alertas
+3. Acordar limites de drift e performance
+4. Formalizar governança de promoção
+:::
+:::
+
+::: {.closing}
+O modelo está pronto para apoiar a priorização de risco em lote. O valor financeiro realizado dependerá da ação aplicada aos alertas e do acompanhamento dos desfechos após a implantação.
+:::
+
+## Referências e limites de interpretação {.smaller}
+
+| Tema | Evidência |
+|---|---|
+| Dados | Home Credit Default Risk, Kaggle; preparação no notebook 00. |
+| EDA e testes | Notebook 01: IV/WoE, KS, qui-quadrado, V de Cramér, missingness e análise de outliers. |
+| Seleção | Notebook 03: remoção iterativa com importância por permutação e PR-AUC em validação cruzada. |
+| Avaliação | Teste separado; LightGBM campeão com PR-AUC 0,2789, ROC-AUC 0,7807 e KS 0,4193. |
+| Financeiro | Avaliação no teste, com `AMT_CREDIT`; não equivale a perda ou economia realizada. |
+| Operação | Airflow, MLflow, PostgreSQL e Docker; monitoramento preparado para Power BI. |

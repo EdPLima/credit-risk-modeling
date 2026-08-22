@@ -9,7 +9,11 @@ artifacts/
 data/raw/*.csv
 data/interim/*.parquet
 data/processed/*.parquet
+data/batch_input/
+data/batch_output/
+data/batch_reference/
 
 # Exceto descrição das colunas
 !data/raw/columns_description.csv
 .venv/
+tmp/

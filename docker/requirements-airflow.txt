@@ -1,0 +1,20 @@
+# Keep Airflow pinned to the same version as the base image.
+# This makes pip fail on dependency conflicts instead of silently changing Airflow.
+apache-airflow==2.11.2
+
+# Runtime dependencies used by the batch inference and retraining pipelines.
+# These packages match the environment recorded in the champion MLmodel artifact.
+# Change them only after training and registering a new champion in a new runtime.
+cloudpickle==2.2.1
+lightgbm==4.4.0
+mlflow==3.3.2
+numpy==1.26.4
+pandas==2.1.4
+psycopg[binary]==3.3.4
+psycopg2-binary==2.9.10
+# MLflow 3.3.2 requires PyArrow below 22; it is not part of model deserialization.
+pyarrow==19.0.1
+PyYAML==6.0.3
+requests==2.34.2
+scikit-learn==1.9.0
+scipy==1.17.1

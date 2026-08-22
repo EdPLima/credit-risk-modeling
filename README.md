@@ -84,7 +84,8 @@ yet implemented in this repository.
 
 ### Prerequisites
 
-- Python 3.10 through 3.12; the project is locked with Python 3.12.
+- Python 3.11. The training and Airflow environments are pinned to the runtime
+  recorded for the current MLflow champion, preventing unsafe model loading.
 - [uv](https://docs.astral.sh/uv/) for dependency management.
 - Docker Desktop with Docker Compose.
 - VS Code with the Python and Jupyter extensions.

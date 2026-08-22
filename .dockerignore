@@ -1,5 +1,9 @@
 .git
 .github
+.env
+.env.*
+.venv
+.ruff_cache
 data
 artifacts
 __pycache__

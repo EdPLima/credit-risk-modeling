@@ -1,6 +1,4 @@
 import numpy as np
-import pandas as pd
-
 
 MODEL_FEATURES = [
     "BENS_RENDA_RATIO",
@@ -330,5 +328,16 @@ def create_features(df):
 
 
 def selection_features(df):
-    df = create_features(df)
-    return df.reindex(columns=MODEL_FEATURES)
+    """Return the ordered model contract from raw or already processed data.
+
+    Training parquet files already contain engineered variables. Reapplying
+    feature engineering to them would require raw columns that are no longer
+    present, such as DAYS_BIRTH. Raw scoring batches still follow the feature
+    engineering path before the same contract is selected.
+    """
+
+    if set(MODEL_FEATURES).issubset(df.columns):
+        return df.reindex(columns=MODEL_FEATURES).copy()
+
+    engineered_data = create_features(df)
+    return engineered_data.reindex(columns=MODEL_FEATURES)

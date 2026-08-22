@@ -1,0 +1,23 @@
+# The current MLflow champion was serialized with Python 3.11.7.
+# Keeping the runtime on the same minor version avoids unsafe pickle loading.
+FROM apache/airflow:2.11.2-python3.11
+
+# LightGBM needs the GNU OpenMP runtime when models are loaded or trained.
+USER root
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# The official image runs Airflow as this non-root user.
+USER airflow
+
+COPY --chown=airflow:root docker/requirements-airflow.txt /tmp/requirements-airflow.txt
+
+RUN pip install --no-cache-dir -r /tmp/requirements-airflow.txt
+
+COPY --chown=airflow:root src /opt/airflow/src
+COPY --chown=airflow:root airflow /opt/airflow/dags
+
+# Project modules use imports such as `from pipeline...` and `from models...`.
+ENV PYTHONPATH=/opt/airflow/src
