@@ -1,7 +1,10 @@
 # Batch Inference, Monitoring and Retraining
 
-The components on this page describe the intended operating architecture. The
-Airflow DAGs and monitoring tables are not yet implemented in this repository.
+The repository implements the core operating architecture described here:
+Airflow DAGs, PostgreSQL monitoring migrations, and reusable inference,
+retraining, promotion, and monitoring modules. The Power BI semantic model and
+dashboard remain an external consumption layer and are not committed as a
+`.pbix` artifact.
 
 ## Batch inference and monitoring
 
@@ -14,7 +17,7 @@ Incoming batch
     -> reuse the registered preprocessing and feature contract
     -> score applications
     -> persist predictions and monitoring aggregates in PostgreSQL
-    -> refresh Power BI semantic model and dashboards
+    -> expose curated PostgreSQL views for Power BI
 ```
 
 Airflow schedules and observes this workflow, while reusable code in

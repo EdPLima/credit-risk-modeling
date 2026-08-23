@@ -1,0 +1,55 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # These values only validate Compose variable interpolation.
+    # They are not production credentials and do not start containers.
+    env:
+      POSTGRES_PASSWORD: ci-only-password
+      AIRFLOW_FERNET_KEY: ci-only-fernet-key
+      AIRFLOW_WEBSERVER_SECRET_KEY: ci-only-webserver-secret
+      AIRFLOW_ADMIN_PASSWORD: ci-only-admin-password
+      MONITORING_KEY_SALT: ci-only-monitoring-salt
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked --group dev
+
+      - name: Run static checks
+        run: uv run ruff check src tests airflow
+
+      - name: Run unit tests
+        run: uv run pytest
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config > /dev/null

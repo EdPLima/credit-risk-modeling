@@ -59,21 +59,27 @@ Raw credit data
 ## Architecture and design notes
 
 - [Dataset preparation and join logic](docs/data-preparation.md)
-- [Batch inference, monitoring, and retraining architecture](docs/operations-architecture.md)
+- [Batch inference, monitoring, and retraining design](docs/operations-architecture.md)
+- [Technical model development report source — Portuguese (Quarto)](docs/documentation/technical-documentation-pt-br.qmd)
+- [Technical model development report — Portuguese (HTML)](docs/documentation/technical-documentation-pt-br.html)
 
-The linked operational architecture is a roadmap. Airflow DAGs, PostgreSQL
-monitoring tables, and Power BI dashboards are planned components and are not
-yet implemented in this repository.
+The repository includes Airflow DAGs for manual batch inference and controlled
+retraining, PostgreSQL migrations for the monitoring schema, and reusable
+modules under `src/` for prediction, training, promotion, and monitoring.
+Power BI is the intended consumer of the PostgreSQL monitoring schema; the
+repository does not include a committed `.pbix` dashboard.
 
 ## Repository structure
 
 ```text
 .
 ├── data/                   # Raw and interim datasets (not versioned)
+├── airflow/                # Batch inference and controlled retraining DAGs
+├── database/migrations/    # PostgreSQL monitoring schema and reporting views
 ├── docker/                 # MLflow server image
-├── docs/                   # Architecture and data-preparation documentation
+├── docs/                   # Architecture, technical reports, and presentation
 ├── notebooks/              # Data preparation, EDA, and modelling
-├── src/                    # Reusable data, feature, model, and pipeline code
+├── src/                    # Reusable data, feature, model, pipeline, and monitoring code
 ├── tests/
 ├── docker-compose.yml
 ├── pyproject.toml
@@ -99,6 +105,10 @@ Create a local `.env` file. It is ignored by Git and must not be committed.
 POSTGRES_DB=mlflow
 POSTGRES_USER=mlflow
 POSTGRES_PASSWORD=your-local-url-safe-password
+AIRFLOW_FERNET_KEY=your-fernet-key
+AIRFLOW_WEBSERVER_SECRET_KEY=your-webserver-secret
+AIRFLOW_ADMIN_PASSWORD=your-airflow-admin-password
+MONITORING_KEY_SALT=your-long-random-monitoring-salt
 ```
 
 Use a URL-safe password because Compose inserts it into the PostgreSQL
@@ -107,12 +117,18 @@ URL-encoded.
 
 ### 2. Install dependencies and start services
 
+The commands below use Docker Compose V2. If your Docker Desktop exposes only
+the legacy command, replace `docker compose` with `docker-compose`.
+
 ```powershell
-uv sync
+uv sync --locked --group dev
 docker compose up -d --build
 ```
 
 Open MLflow at [http://localhost:5000](http://localhost:5000).
+Open Airflow at [http://localhost:8080](http://localhost:8080) and sign in
+with `AIRFLOW_ADMIN_USERNAME` (default: `admin`) and the password configured
+in `.env`.
 
 ### 3. Run the notebooks
 
@@ -122,6 +138,26 @@ Open the cloned repository folder in VS Code, select the interpreter from
 1. `00_PREP_DATA.ipynb`
 2. `01_EDA-FE.ipynb`
 3. `02_PROCESSING_TRAING_MODEL.ipynb`
+
+## Batch inference, monitoring, and retraining
+
+The services start together through Docker Compose. The database bootstrap
+service creates the monitoring schema before Airflow starts; its migrations are
+stored in `database/migrations/`.
+
+- `airflow/batch_inference_dag.py` resolves
+  `models:/credit-risk-model@champion`, scores a batch, and persists the
+  prediction audit trail for monitoring.
+- `airflow/retraining_dag.py` is manually triggered and only proceeds when
+  enough mature labels are available. It records the attempt, evaluates a
+  challenger against the champion, and moves the alias only when the declared
+  promotion gates pass.
+- PostgreSQL stores training references, scored batches, drift profiles,
+  model performance, and retraining audit records. Power BI can model the
+  selected dimension and fact tables from the `monitoring` schema.
+
+These workflows are intentionally manual by default: it is safer for a
+portfolio project and makes each retraining decision explicit and auditable.
 
 ## MLflow model contract
 
@@ -146,14 +182,19 @@ input/output examples, and the model signature with the registered version.
 ```powershell
 docker compose logs -f mlflow
 docker compose logs -f postgres
+docker compose logs -f airflow-scheduler
+docker compose ps
 docker compose down
 uv run pytest
+uv run ruff check src tests airflow
 ```
 
 ## Notes
 
 - Raw and interim datasets are intentionally excluded from version control.
 - Model and threshold selection must not use the final test set.
+- Airflow credentials, database passwords, and monitoring salts belong only in
+  `.env`; never commit them.
 - This is an educational and portfolio project. A production credit decision
   system requires governance, privacy controls, fairness assessment,
   monitoring, and human review.
