@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import re
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -37,6 +37,7 @@ def credit_risk_batch_inference():
 
         input_path = run_conf.get("input_path")
         output_path = run_conf.get("output_path")
+        scoring_date = run_conf.get("scoring_date")
 
         if not input_path or not output_path:
             raise ValueError(
@@ -50,10 +51,17 @@ def credit_risk_batch_inference():
         if input_file.suffix.lower() not in {".csv", ".parquet"}:
             raise ValueError("Input batch must be a CSV or Parquet file.")
 
+        if scoring_date is not None:
+            try:
+                date.fromisoformat(str(scoring_date))
+            except ValueError as error:
+                raise ValueError("'scoring_date' must use the YYYY-MM-DD format.") from error
+
         return {
             "batch_id": context["run_id"],
             "input_path": str(input_file),
             "output_path": str(Path(output_path)),
+            "scoring_date": str(scoring_date) if scoring_date else None,
         }
 
     @task(task_id="predict")
@@ -63,6 +71,7 @@ def credit_risk_batch_inference():
         from data.load_data import load_data
         from features.feature_engineering import selection_features
         from monitoring.batch_monitoring import monitor_scored_batch
+        from monitoring.model_lifecycle import sync_model_lifecycle
 
         data = load_data(str(batch["input_path"]))
         resolved_model = load_model()
@@ -73,6 +82,12 @@ def credit_risk_batch_inference():
         database_url = os.getenv("MONITORING_DATABASE_URL")
         monitoring_summary = None
         if database_url:
+            # Mirror the MLflow @champion alias before exposing monitoring data.
+            sync_model_lifecycle(
+                database_url=database_url,
+                model_name=resolved_model.model_name,
+                champion_version=resolved_model.model_version,
+            )
             monitoring_summary = monitor_scored_batch(
                 database_url=database_url,
                 monitoring_key_salt=os.environ["MONITORING_KEY_SALT"],
@@ -84,6 +99,11 @@ def credit_risk_batch_inference():
                 selected_features=selected_features,
                 predictions=predictions,
                 airflow_dag_run_id=str(batch["batch_id"]),
+                scoring_date=(
+                    date.fromisoformat(str(batch["scoring_date"]))
+                    if batch["scoring_date"]
+                    else None
+                ),
             )
 
         output_path = Path(str(batch["output_path"]))

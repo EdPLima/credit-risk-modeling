@@ -12,6 +12,7 @@ from sklearn.model_selection import train_test_split
 
 from config.mlflow import get_mlflow_settings
 from deployment.model_promotion import apply_promotion_decision
+from monitoring.model_lifecycle import sync_model_lifecycle
 from monitoring.training_reference import (
     ModelReference,
     anonymize_application_keys,
@@ -164,6 +165,21 @@ def _register_challenger(
         champion_alias=settings.champion_alias,
         promotion_allowed=promotion_allowed,
     )
+
+    database_url = os.getenv("MONITORING_DATABASE_URL")
+    if database_url:
+        challenger_status = (
+            "challenger"
+            if not promotion_allowed
+            else "rejected"
+        )
+        sync_model_lifecycle(
+            database_url=database_url,
+            model_name=settings.registered_model_name,
+            champion_version=champion_version_after,
+            challenger_version=challenger_version,
+            challenger_status=challenger_status,
+        )
 
     return (
         challenger_version,

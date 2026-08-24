@@ -78,6 +78,7 @@ def _upsert_scoring_batch(
     source_uri: str,
     row_count: int,
     airflow_dag_run_id: str | None,
+    scoring_date: date,
 ) -> int:
     cursor.execute(
         """
@@ -97,7 +98,7 @@ def _upsert_scoring_batch(
         (
             batch_id,
             model_key,
-            _calculation_date(),
+            scoring_date,
             source_uri,
             # A file can legitimately be rescored in another controlled DAG run.
             # The batch id is therefore part of the idempotency fingerprint.
@@ -119,6 +120,7 @@ def _persist_predictions(
     predictions: pd.DataFrame,
     threshold: float,
     salt: str,
+    scoring_date: date,
 ) -> None:
     application_ids = data.get("SK_ID_CURR", data.index.to_series())
     application_keys = anonymize_application_keys(application_ids, salt)
@@ -128,7 +130,7 @@ def _persist_predictions(
         (
             scoring_batch_key,
             model_key,
-            _calculation_date(),
+            scoring_date,
             application_key,
             float(probability),
             threshold,
@@ -177,6 +179,7 @@ def _persist_feature_monitoring(
     reference_features: pd.DataFrame,
     current_features: pd.DataFrame,
     thresholds: DriftThresholds,
+    calculation_date: date,
 ) -> dict[str, int]:
     cursor.execute(
         "SELECT segment_key FROM monitoring.dim_segment WHERE segment_type = 'portfolio' AND segment_value = 'all'"
@@ -221,7 +224,7 @@ def _persist_feature_monitoring(
             """,
             (
                 scoring_batch_key, model_key, reference_key, feature_keys[feature_name], segment_key,
-                _calculation_date(), result["row_count"], result["missing_count"], result["missing_rate"],
+                calculation_date, result["row_count"], result["missing_count"], result["missing_rate"],
                 result["distinct_count"], result["minimum_value"], result["maximum_value"],
                 result["mean_value"], result["median_value"], result["percentile_05"],
                 result["percentile_25"], result["percentile_75"], result["percentile_95"],
@@ -242,6 +245,7 @@ def _persist_prediction_monitoring(
     current_scores: pd.Series,
     threshold: float,
     thresholds: DriftThresholds,
+    calculation_date: date,
 ) -> str:
     cursor.execute(
         "SELECT segment_key FROM monitoring.dim_segment WHERE segment_type = 'portfolio' AND segment_value = 'all'"
@@ -273,7 +277,7 @@ def _persist_prediction_monitoring(
             calculated_at = CURRENT_TIMESTAMP
         """,
         (
-            scoring_batch_key, model_key, reference_key, segment_key, _calculation_date(), len(current_scores),
+            scoring_batch_key, model_key, reference_key, segment_key, calculation_date, len(current_scores),
             float(current_scores.mean()), float(current_scores.median()),
             float(current_scores.quantile(0.05)), float(current_scores.quantile(0.95)),
             float((current_scores >= threshold).mean()), result["psi"], result["ks_statistic"],
@@ -283,7 +287,14 @@ def _persist_prediction_monitoring(
     return str(result["alert_status"])
 
 
-def _persist_data_quality(cursor: psycopg.Cursor[Any], scoring_batch_key: int, model_key: int, data: pd.DataFrame, predictions: pd.DataFrame) -> None:
+def _persist_data_quality(
+    cursor: psycopg.Cursor[Any],
+    scoring_batch_key: int,
+    model_key: int,
+    data: pd.DataFrame,
+    predictions: pd.DataFrame,
+    calculation_date: date,
+) -> None:
     """Persist only universal, approved technical rules; add business rules through the dimension."""
 
     checks = [
@@ -319,7 +330,7 @@ def _persist_data_quality(cursor: psycopg.Cursor[Any], scoring_batch_key: int, m
                 calculated_at = CURRENT_TIMESTAMP
             """,
             (
-                scoring_batch_key, model_key, rule_key, _calculation_date(), row_count, failed_count,
+                scoring_batch_key, model_key, rule_key, calculation_date, row_count, failed_count,
                 pass_rate, "passed" if failed_count == 0 else "failed",
                 Jsonb({"rule": config}),
             ),
@@ -338,6 +349,7 @@ def monitor_scored_batch(
     predictions: pd.DataFrame,
     airflow_dag_run_id: str | None = None,
     thresholds: DriftThresholds = DEFAULT_THRESHOLDS,
+    scoring_date: date | None = None,
 ) -> dict[str, object]:
     """Persist predictions, quality checks, feature drift, and prediction drift."""
 
@@ -348,25 +360,27 @@ def monitor_scored_batch(
     if len(data) != len(selected_features) or len(data) != len(predictions):
         raise ValueError("Data, selected features, and predictions must have the same row count.")
 
+    calculation_date = scoring_date or _calculation_date()
+
     with psycopg.connect(database_url) as connection, connection.cursor() as cursor:
         model_key, reference_key, threshold = _reference_metadata(cursor, model_name, model_version)
         reference_features, reference_scores = _load_reference_sample(cursor, reference_key)
         scoring_batch_key = _upsert_scoring_batch(
-            cursor, batch_id, model_key, source_uri, len(data), airflow_dag_run_id
+            cursor, batch_id, model_key, source_uri, len(data), airflow_dag_run_id, calculation_date
         )
         _persist_predictions(
             cursor, scoring_batch_key, model_key, data, selected_features, predictions,
-            threshold, monitoring_key_salt
+            threshold, monitoring_key_salt, calculation_date
         )
         feature_alerts = _persist_feature_monitoring(
             cursor, scoring_batch_key, model_key, reference_key, reference_features,
-            selected_features, thresholds
+            selected_features, thresholds, calculation_date
         )
         prediction_alert = _persist_prediction_monitoring(
             cursor, scoring_batch_key, model_key, reference_key, reference_scores,
-            predictions["probability_default"], threshold, thresholds
+            predictions["probability_default"], threshold, thresholds, calculation_date
         )
-        _persist_data_quality(cursor, scoring_batch_key, model_key, data, predictions)
+        _persist_data_quality(cursor, scoring_batch_key, model_key, data, predictions, calculation_date)
 
     return {
         "scoring_batch_key": scoring_batch_key,
