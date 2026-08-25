@@ -159,6 +159,14 @@ stored in `database/migrations/`.
 These workflows are intentionally manual by default: it is safer for a
 portfolio project and makes each retraining decision explicit and auditable.
 
+> **Simulation scope.** The local batch files and monitoring records are
+> generated from historical train, validation, and test partitions solely to
+> demonstrate the inference, outcome-maturation, drift, and monitoring flow.
+> They are not real production deliveries or production customer outcomes.
+> Simulated batches may overlap, so their operational metrics must not be used
+> as official test results, evidence of live model performance, or credit
+> decision input.
+
 ## MLflow model contract
 
 The registered model is loaded through:

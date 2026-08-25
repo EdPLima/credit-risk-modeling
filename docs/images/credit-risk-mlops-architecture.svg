@@ -1,0 +1,198 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="1350" viewBox="0 0 1600 1350" role="img" aria-labelledby="title description">
+  <title id="title">Credit Risk Modeling: end-to-end MLOps architecture</title>
+  <desc id="description">Architecture from raw data through model development, MLflow registry, Airflow batch inference, PostgreSQL monitoring, Power BI, and controlled retraining.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#041526"/>
+      <stop offset="1" stop-color="#071f35"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1992ff"/>
+      <stop offset="1" stop-color="#3159e8"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20c997"/>
+      <stop offset="1" stop-color="#0d9a76"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a855f7"/>
+      <stop offset="1" stop-color="#5b4ee5"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5e96c9"/>
+    </marker>
+    <style>
+      .title { font: 700 42px Arial, sans-serif; fill: #f7fbff; letter-spacing: .5px; }
+      .subtitle { font: 400 19px Arial, sans-serif; fill: #a8c2d9; }
+      .lane { font: 700 16px Arial, sans-serif; fill: #52adff; letter-spacing: 2px; }
+      .node-title { font: 700 19px Arial, sans-serif; fill: #f6fbff; }
+      .node-copy { font: 400 14px Arial, sans-serif; fill: #abc4d9; }
+      .small { font: 700 13px Arial, sans-serif; fill: #8abce8; letter-spacing: 1px; }
+      .pill { font: 700 13px Arial, sans-serif; fill: #cce7ff; }
+      .arrow-label { font: 700 13px Arial, sans-serif; fill: #88b7e2; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1350" fill="url(#background)"/>
+  <rect x="0" y="0" width="1600" height="8" fill="url(#blue)"/>
+
+  <text x="70" y="78" class="title">CREDIT RISK MODELING</text>
+  <text x="70" y="112" class="subtitle">End-to-end machine learning architecture • development, batch scoring, monitoring and controlled retraining</text>
+  <rect x="1235" y="54" rx="17" width="116" height="35" fill="#0d2f4c" stroke="#2479b6"/>
+  <text x="1257" y="77" class="pill">PYTHON 3.11</text>
+  <rect x="1365" y="54" rx="17" width="165" height="35" fill="#0d2f4c" stroke="#2479b6"/>
+  <text x="1390" y="77" class="pill">GITHUB ACTIONS • CI</text>
+
+  <!-- Development lane -->
+  <rect x="45" y="154" width="1510" height="320" rx="24" fill="#071d31" stroke="#1467a5" stroke-width="1.5"/>
+  <text x="76" y="194" class="lane">01  MODEL DEVELOPMENT</text>
+  <text x="76" y="220" class="subtitle">Data preparation, evidence-based model selection and reproducible registry</text>
+
+  <path d="M330 335 H380" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M635 335 H685" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M940 335 H990" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M1245 335 H1295" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="75" y="255" width="255" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="101" y="282" width="44" height="44" xlink:href="../documentation/assets/technology/python.svg"/>
+    <text x="158" y="291" class="node-title">DATA FOUNDATION</text>
+    <text x="158" y="316" class="node-copy">CSV source files</text>
+    <text x="101" y="361" class="small">EXTRACTION &amp; JOIN</text>
+    <text x="101" y="386" class="node-copy">Applications, history and target</text>
+
+    <rect x="380" y="255" width="255" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="406" y="282" width="44" height="44" xlink:href="../documentation/assets/technology/python.svg"/>
+    <text x="463" y="291" class="node-title">EDA &amp; PROCESSING</text>
+    <text x="463" y="316" class="node-copy">Python / pandas</text>
+    <text x="406" y="361" class="small">QUALITY &amp; EVIDENCE</text>
+    <text x="406" y="386" class="node-copy">Imbalance and statistical tests</text>
+
+    <rect x="685" y="255" width="255" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="711" y="282" width="44" height="44" xlink:href="../documentation/assets/technology/scikitlearn.svg"/>
+    <text x="768" y="291" class="node-title">FEATURE PIPELINE</text>
+    <text x="768" y="316" class="node-copy">scikit-learn</text>
+    <text x="711" y="361" class="small">ENGINEERING &amp; RFECV</text>
+    <text x="711" y="386" class="node-copy">Selection and preprocessing contract</text>
+
+    <rect x="990" y="255" width="255" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <rect x="1016" y="282" width="44" height="44" rx="10" fill="url(#green)"/>
+    <text x="1025" y="311" style="font:700 16px Arial;fill:#fff">LGBM</text>
+    <text x="1073" y="291" class="node-title">TRAIN &amp; VALIDATE</text>
+    <text x="1073" y="316" class="node-copy">LightGBM + cross-validation</text>
+    <text x="1016" y="361" class="small">PR-AUC • KS • THRESHOLD</text>
+    <text x="1016" y="386" class="node-copy">Champion selection evidence</text>
+
+    <rect x="1295" y="255" width="210" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="1321" y="282" width="44" height="44" xlink:href="../documentation/assets/technology/mlflow.svg"/>
+    <text x="1378" y="291" class="node-title">MLFLOW</text>
+    <text x="1378" y="316" class="node-copy">Tracking &amp; Registry</text>
+    <text x="1321" y="361" class="small">@CHAMPION</text>
+    <text x="1321" y="386" class="node-copy">Versions, artifacts, signature</text>
+  </g>
+
+  <!-- Operations lane -->
+  <rect x="45" y="505" width="1510" height="372" rx="24" fill="#071d31" stroke="#1467a5" stroke-width="1.5"/>
+  <text x="76" y="545" class="lane">02  BATCH INFERENCE &amp; OBSERVABILITY</text>
+  <text x="76" y="571" class="subtitle">The champion scores incoming files and creates an auditable monitoring trail</text>
+
+  <path d="M325 696 H385" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M620 696 H680" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M915 696 H975" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M1210 696 H1270" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="75" y="616" width="250" height="165" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="101" y="643" width="44" height="44" xlink:href="../documentation/assets/technology/docker.svg"/>
+    <text x="158" y="652" class="node-title">BATCH INPUT</text>
+    <text x="158" y="677" class="node-copy">CSV / Parquet files</text>
+    <text x="101" y="726" class="small">CONTROLLED DELIVERY</text>
+    <text x="101" y="751" class="node-copy">Manual batch trigger</text>
+
+    <rect x="385" y="616" width="235" height="165" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="411" y="643" width="44" height="44" xlink:href="../documentation/assets/technology/airflow.svg"/>
+    <text x="468" y="652" class="node-title">AIRFLOW</text>
+    <text x="468" y="677" class="node-copy">Batch orchestration</text>
+    <text x="411" y="726" class="small">LOAD → PREDICT → SAVE</text>
+    <text x="411" y="751" class="node-copy">DAG execution and logs</text>
+
+    <rect x="680" y="616" width="235" height="165" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="706" y="643" width="44" height="44" xlink:href="../documentation/assets/technology/mlflow.svg"/>
+    <text x="763" y="652" class="node-title">MODEL RESOLUTION</text>
+    <text x="763" y="677" class="node-copy">MLflow Registry</text>
+    <text x="706" y="726" class="small">MODELS:/…@CHAMPION</text>
+    <text x="706" y="751" class="node-copy">Version and signature validated</text>
+
+    <rect x="975" y="616" width="235" height="165" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="1001" y="643" width="44" height="44" xlink:href="../documentation/assets/technology/python.svg"/>
+    <text x="1058" y="652" class="node-title">BATCH SCORING</text>
+    <text x="1058" y="677" class="node-copy">Probability + threshold</text>
+    <text x="1001" y="726" class="small">PREDICTION CONTRACT</text>
+    <text x="1001" y="751" class="node-copy">Risk score and decision</text>
+
+    <rect x="1270" y="616" width="235" height="165" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="1296" y="643" width="44" height="44" xlink:href="../documentation/assets/technology/postgresql.svg"/>
+    <text x="1353" y="652" class="node-title">POSTGRESQL</text>
+    <text x="1353" y="677" class="node-copy">Monitoring schema</text>
+    <text x="1296" y="726" class="small">AUDIT &amp; METRICS</text>
+    <text x="1296" y="751" class="node-copy">Scores, drift, quality, outcomes</text>
+  </g>
+
+  <path d="M1388 782 V818" stroke="#5e96c9" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <g filter="url(#shadow)">
+    <rect x="1180" y="818" width="325" height="42" rx="15" fill="#0b3151" stroke="#1e75ad"/>
+    <image x="1200" y="826" width="27" height="27" xlink:href="../documentation/assets/technology/powerbi.png"/>
+    <text x="1242" y="846" style="font:700 16px Arial, sans-serif;fill:#f6fbff">POWER BI • MONITORING</text>
+  </g>
+
+  <!-- Retraining lane -->
+  <rect x="45" y="908" width="1510" height="365" rx="24" fill="#071d31" stroke="#1467a5" stroke-width="1.5"/>
+  <text x="76" y="948" class="lane">03  CONTROLLED RETRAINING LOOP</text>
+  <text x="76" y="974" class="subtitle">Only matured outcomes are eligible. Promotion occurs only when the challenger improves PR-AUC.</text>
+
+  <path d="M360 1105 H410" stroke="#7c94d8" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M700 1105 H750" stroke="#7c94d8" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M1040 1105 H1090" stroke="#7c94d8" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <path d="M1375 1105 C1460 1105 1460 1242 1290 1242 H250 C120 1242 120 1030 200 1030" stroke="#3c7cae" stroke-width="2.5" fill="none" stroke-dasharray="9 8" marker-end="url(#arrow)"/>
+  <text x="610" y="1258" class="arrow-label">CONTINUOUS, GOVERNED LEARNING CYCLE</text>
+
+  <g filter="url(#shadow)">
+    <rect x="75" y="1025" width="285" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="101" y="1052" width="44" height="44" xlink:href="../documentation/assets/technology/postgresql.svg"/>
+    <text x="158" y="1061" class="node-title">MATURED OUTCOMES</text>
+    <text x="158" y="1086" class="node-copy">Observed targets linked back</text>
+    <text x="101" y="1135" class="small">PERFORMANCE EVIDENCE</text>
+    <text x="101" y="1160" class="node-copy">PR-AUC, KS, calibration, value</text>
+
+    <rect x="410" y="1025" width="290" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="436" y="1052" width="44" height="44" xlink:href="../documentation/assets/technology/airflow.svg"/>
+    <text x="493" y="1061" class="node-title">RETRAINING DAG</text>
+    <text x="493" y="1086" class="node-copy">Data load and model training</text>
+    <text x="436" y="1135" class="small">CONTROLLED EXECUTION</text>
+    <text x="436" y="1160" class="node-copy">Auditable pipeline run</text>
+
+    <rect x="750" y="1025" width="290" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <rect x="776" y="1052" width="44" height="44" rx="10" fill="url(#purple)"/>
+    <text x="785" y="1081" style="font:700 16px Arial;fill:#fff">LGBM</text>
+    <text x="833" y="1061" class="node-title">CHALLENGER</text>
+    <text x="833" y="1086" class="node-copy">Candidate model version</text>
+    <text x="776" y="1135" class="small">SAME TEST SET</text>
+    <text x="776" y="1160" class="node-copy">Fair champion comparison</text>
+
+    <rect x="1090" y="1025" width="360" height="160" rx="18" fill="#082943" stroke="#1e5f91"/>
+    <image x="1116" y="1052" width="44" height="44" xlink:href="../documentation/assets/technology/mlflow.svg"/>
+    <text x="1173" y="1061" class="node-title">PROMOTION GATE</text>
+    <text x="1173" y="1086" class="node-copy">MLflow Champion vs Challenger</text>
+    <rect x="1116" y="1120" width="158" height="36" rx="12" fill="url(#green)"/>
+    <text x="1135" y="1144" style="font:700 13px Arial;fill:#fff">PR-AUC ↑ → PROMOTE</text>
+    <text x="1116" y="1174" class="node-copy">Otherwise retain champion</text>
+  </g>
+
+  <rect x="70" y="1300" width="1460" height="1" fill="#1a547f"/>
+  <text x="70" y="1326" class="subtitle">Portfolio project • Batch credit-risk scoring • Reproducible infrastructure with Docker Compose</text>
+  <image x="1397" y="1308" width="25" height="25" xlink:href="../documentation/assets/technology/docker.svg"/>
+  <text x="1433" y="1328" class="pill">DOCKERIZED SERVICES</text>
+</svg>
